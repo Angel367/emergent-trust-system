@@ -1,0 +1,3 @@
+pymorphy2==0.8
+spacy==2.1.9
+# git clone -b v2.1 https://github.com/buriy/spacy-ru.git && cp -r ./spacy-ru/ru2/. /my_project_destination/ru2
