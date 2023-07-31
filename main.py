@@ -1,6 +1,7 @@
 import random
 
 
+
 class Agent:
     def __init__(self, agent_id):
         self._ID = agent_id
@@ -34,8 +35,8 @@ class Interaction:
     def __init__(self, agent1, agent2, polarity, subjectivity, timestamp):
         self._agent1 = agent1
         self._agent2 = agent2
-        self._sentiment = polarity                  # from -1 to 1
-        self._interactionType = subjectivity        # from 0 to 1
+        self._sentiment = polarity  # from -1 to 1
+        self._interactionType = subjectivity  # from 0 to 1
         self._timestamp = timestamp
 
     def get_agent1(self):
@@ -64,3 +65,26 @@ class EmergentTrust:
         # (Implementation left to your specific requirements)
         pass
 
+
+from dostoevsky.tokenization import RegexTokenizer
+from dostoevsky.models import FastTextSocialNetworkModel
+
+tokenizer = RegexTokenizer()
+tokens = tokenizer.split('всё очень плохо')  # [('всё', None), ('очень', None), ('плохо', None)]
+
+model = FastTextSocialNetworkModel(tokenizer=tokenizer)
+
+
+messages = [
+    'привет',
+    'я люблю тебя!!',
+    'малолетние деasdsadasбилы'
+]
+
+results = model.predict(messages, k=2)
+
+for message, sentiment in zip(messages, results):
+    # привет -> {'speech': 1.0000100135803223, 'skip': 0.0020607432816177607}
+    # люблю тебя!! -> {'positive': 0.9886782765388489, 'skip': 0.005394937004894018}
+    # малолетние дебилы -> {'negative': 0.9525841474533081, 'neutral': 0.13661839067935944}]
+    print(message, '->', sentiment)
