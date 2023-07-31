@@ -1,50 +1,60 @@
 import random
+import csv
 
 
 class Agent:
-
-    def __init__(self, agent_id):
-        self._ID = agent_id
-        self._reputation = random.random  # interval
+    def __init__(self, agent_id, name="baseName", reputation=0.50):
+        self.ID = agent_id
+        self.name = name
+        self.reputation = reputation #interval
         self._trustScores = []  # БЫЛО random.randint(0, 100)   TODO это массив по идее
         # однако я думаю что это отдельная сущность характеризующ отношения между агентами
         # and what interval
         self._interactions = []
 
     def get_ID(self):
-        return self._ID
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_name(self):
+        return self.name
+
+    def set_name(self, name):
+        self.name = name
 
     def get_reputation(self):
-        return self._reputation
+        return self.reputation
 
     def set_reputation(self, reputation):
-        self._reputation = reputation
+        self.reputation = reputation
 
     def get_trust_scores(self):
-        return self._trustScores
+        return self.trustScores
 
     def get_trust_score_by_id(self, agent_id):
-        for item in self._trustScores:
+        for item in self.trustScores:
             if item.agent2 == agent_id:
                 return item.score
             else:
                 return None
 
     def add_trust_score(self, score):
-        self._trustScores.append(score)
+        self.trustScores.append(score)
 
     def get_interactions(self):
-        return self._interactions
+        return self.interactions
 
     def get_interactions_by_id(self, agent_id):
         items = []
-        for item in self._interactions:
+        for item in self.interactions:
             if item.agent2 == agent_id or item.agent1 == agent_id:
                 items.append(item)
         return items
 
     def add_interaction(self, interaction):
-        self._interactions.append(interaction)
+        self.interactions.append(interaction)
 
 
 class Interaction:
@@ -108,3 +118,76 @@ class EmergentTrust:
         # (Implementation left to your specific requirements)
         pass
 
+
+from dostoevsky.tokenization import RegexTokenizer
+from dostoevsky.models import FastTextSocialNetworkModel
+
+tokenizer = RegexTokenizer()
+tokens = tokenizer.split('всё очень плохо')  # [('всё', None), ('очень', None), ('плохо', None)]
+
+model = FastTextSocialNetworkModel(tokenizer=tokenizer)
+
+
+messages = [
+    'Сегодня хорошая погода',
+    'Я счастлив проводить с тобою время',
+    'Мне нравится эта музыкальная композиция',
+    'В больнице была ужасная очередь',
+    'Сосед с верхнего этажа мешает спать',
+    'Маленькая девочка потерялась в торговом центре',
+]
+
+results = model.predict(messages, k=6)
+
+for message, sentiment in zip(messages, results):
+    # привет -> {'speech': 1.0000100135803223, 'skip': 0.0020607432816177607}
+    # люблю тебя!! -> {'positive': 0.9886782765388489, 'skip': 0.005394937004894018}
+    # малолетние дебилы -> {'negative': 0.9525841474533081, 'neutral': 0.13661839067935944}]
+    print(message, '->', sentiment)
+
+
+def generate_data_from_kt():
+    # generate agents (A...Z)
+    import csv
+    agents_data = [
+        {"ID": 1, "name": "A", "reputation": 0.50},
+        {"ID": 2, "name": "B", "reputation": 0.50}
+    ]
+    fieldnames = ["ID", "name", "reputation"]
+    with open('agents.csv', 'w', newline='') as csvfile:
+        csv_writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        csv_writer.writeheader()
+        csv_writer.writerows(agents_data)
+
+
+
+
+def read_agents_from_csv(filename="agents.csv"):
+    agents = []
+    with open(filename, newline='') as csvfile:
+        csv_reader = csv.DictReader(csvfile)
+        for row in csv_reader:
+            ID = int(row['ID'])
+            name = row['name']
+            reputation = float(row['reputation'])
+            agent = Agent(agent_id=ID, name=name, reputation=reputation)
+            agents.append(agent)
+
+    for agent in agents:
+        print(f"ID: {agent.ID}, Name: {agent.name}, Reputation: {agent.reputation}")
+
+    return agents
+
+
+
+
+with open('kt.csv', newline='', encoding='utf8') as csvfile:
+
+    csv_reader = csv.reader(csvfile)
+
+    for row in csv_reader:
+        # 0 - id отзыва
+        # 1 - содержимое (rus)
+        # 3 - оценка (good, bad, neutral)
+        #print(row[3])
+        pass
