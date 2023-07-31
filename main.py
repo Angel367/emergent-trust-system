@@ -5,12 +5,22 @@ import random
 class Agent:
     def __init__(self, agent_id):
         self._ID = agent_id
+        self.name = "baseName"
         self._reputation = 0
         self._trustScores = random.randint(0, 100)
         self._interactions = []
 
     def get_ID(self):
         return self._ID
+
+    def set_ID(self, ID):
+        self._ID = ID
+
+    def get_name(self):
+        return self.name
+
+    def set_name(self, name):
+        self.name = name
 
     def get_reputation(self):
         return self._reputation
@@ -76,12 +86,15 @@ model = FastTextSocialNetworkModel(tokenizer=tokenizer)
 
 
 messages = [
-    'привет',
-    'я люблю тебя!!',
-    'малолетние деasdsadasбилы'
+    'Сегодня хорошая погода',
+    'Я счастлив проводить с тобою время',
+    'Мне нравится эта музыкальная композиция',
+    'В больнице была ужасная очередь',
+    'Сосед с верхнего этажа мешает спать',
+    'Маленькая девочка потерялась в торговом центре',
 ]
 
-results = model.predict(messages, k=2)
+results = model.predict(messages, k=6)
 
 for message, sentiment in zip(messages, results):
     # привет -> {'speech': 1.0000100135803223, 'skip': 0.0020607432816177607}
