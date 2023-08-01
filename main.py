@@ -61,12 +61,14 @@ class Interaction:
     def __init__(self, agent1, agent2, polarity, subjectivity, timestamp):
         self._agent1 = agent1
         self._agent2 = agent2
-        self._sentiment = polarity                  # from -1 to 1 -negative +positive
-        self._interactionType = subjectivity        # from 0 to 1 = neutrality
+        self._sentiment = polarity  # from -1 to 1 -negative +positive
+        self._interactionType = subjectivity  # from 0 to 1 = neutrality
         self._timestamp = timestamp
-        self.delta_trust()
         agent1.add_interaction(self)
         agent2.add_interaction(self)
+        if not agent1.get_trust_score_by_id(agent2.ID):
+            Trust(agent1, agent2, 0.5)
+        self.delta_trust()
 
     def get_agent1(self):
         return self._agent1
@@ -85,26 +87,27 @@ class Interaction:
 
     def delta_trust(self):
         #  TODO осмыслить формулу для расчета доверия trust_change
-        trust_change = self.get_sentiment() * \
-                             self.get_interaction_type() * self._agent1.reputation
+        trust_change = 0.01 * self.get_sentiment() * \
+                       self.get_interaction_type() * self._agent1.reputation
         trust = self._agent1.get_trust_score_by_id(agent_id=self._agent2.ID)
-        # print(trust_change)
+        print(trust_change, trust.get_score(), self._agent1, self._agent2)
         if 0 < trust.get_score() + trust_change < 1:
             trust.set_score(trust.get_score() + trust_change)
 
 
-
 class Trust:
-    def __init__(self, agent1, agent2, score):
+    def __init__(self, agent1, agent2, score=0.5):
         self._agent1 = agent1
         self._agent2 = agent2
         self._score = score
-        agent1.add_trust_score(self)
-        # agent2.add_trust_score(self)
+        if not agent1.get_trust_score_by_id(agent_id=agent2.ID):
+            print("Added ", agent1, "~", agent2)
+            agent1.add_trust_score(self)
 
     def __str__(self):
         return self._agent1.__str__() + "~" + self._agent2.__str__() + ":" \
             + self._score.__str__()
+
     # def __len__(self):
     #     return int(self._score * 10)
 
@@ -125,22 +128,32 @@ class EmergentTrust:
     @staticmethod
     def calculate_for_i_j(agent_i, agent_j, agents):
         trust_score = agent_i.get_trust_score_by_id(agent_id=agent_j.ID).get_score()
-        interaction_count = agent_i.get_interactions_by_id(agent_id=agent_j.ID).count()
+        interaction_count = agent_i.get_interactions_by_id_count(agent_id=agent_j.ID)
         sum = 0
         for x in agents:
             for y in agents:
                 if not x.ID == y.ID:
-                    sum = x.get_interactions_by_id(agent_id=y.ID).count() * \
-                          x.get_trust_score_by_id(agent_id=y.ID).get_score()
-        sum /= 2
+                    if not x.get_interactions_by_id_count(agent_id=y.ID) == 0:
+                        # print(sum, x, y)
+                        sum = x.get_interactions_by_id_count(agent_id=y.ID) * \
+                              x.get_trust_score_by_id(agent_id=y.ID).get_score()
+        # print(sum, "sum")
         return trust_score * interaction_count / sum
+        # TODO протестировать правильность работы ЕД для I,J
         # (InteractionCount(i, j) * TrustScore(i, j)) / Sum(InteractionCount(x, y) * TrustScore(x, y))
         # Perform trust calculation based on available data and return the result
         # (Implementation left to your specific requirements)
         pass
     # TODO sum of all em_tr_for_i_j and div by their count
-    # def calculate_average(self,):
-
+    @staticmethod
+    def calculate_average(agents):
+        sum, count = 0, 0
+        for a1 in agents:
+            for a2 in agents:
+                if not a1 == a2:
+                    sum += EmergentTrust.calculate_for_i_j(a1, a2, agents)
+                    count += 1
+        return sum / count
 #
 # from dostoevsky.tokenization import RegexTokenizer
 # from dostoevsky.models import FastTextSocialNetworkModel

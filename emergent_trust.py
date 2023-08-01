@@ -4,7 +4,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import random
 
-from main import Agent, Trust, Interaction
+from main import Agent, Trust, Interaction, EmergentTrust
 
 
 # Функция для обновления доверия на основе взаимодействий агентов
@@ -19,17 +19,22 @@ from main import Agent, Trust, Interaction
 #         G[u][v]['trust'] = min(max(G[u][v]['trust'] + trust_change, 0), 1)
 
 
-def draw_graph(agents, trusts):
+def draw_graph(agents):
     # Создаем граф с 10 узлами и соединяем каждый узел с двумя соседями
     G = nx.MultiDiGraph()
     G.add_nodes_from(agents)
+    trusts = []
+    for v in agents:
+        for one in v.get_trust_scores():
+            trusts.append(one)
+    print(trusts)
     for trust in trusts:
+        print(trust)
         G.add_edge(trust.get_agent1(),
                    trust.get_agent2(), trust=trust.get_score())
     edge_widths = []
+    print(G)
     # Инициализируем доверие случайными значениями
-
-
     # Анализируем эмерджентное доверие в графе
     # update_trust(G, interactions)
     # Визуализируем граф с помощью цвета и толщины ребер, основанных на доверии
@@ -56,14 +61,26 @@ trusts = [
     Trust(agents[0], agents[1], 0.7)
           ]
 interactions = [
+    Interaction(agents[1], agents[2], 0.9, 1, datetime.datetime.now()),
     Interaction(agents[0], agents[1], -0.9, 1, datetime.datetime.now()),
-    Interaction(agents[0], agents[1], -0.8, 0.6, datetime.datetime.now()),
+    Interaction(agents[1], agents[0], -0.8, 0.6, datetime.datetime.now()),
+    Interaction(agents[2], agents[1], 0.7, 1, datetime.datetime.now()),
+    Interaction(agents[0], agents[2], 0.7, 0.5, datetime.datetime.now()),
+Interaction(agents[1], agents[2], 0.9, 1, datetime.datetime.now()),
+    Interaction(agents[2], agents[0], -0.9, 1, datetime.datetime.now()),
+    Interaction(agents[2], agents[0], -0.8, 0.6, datetime.datetime.now()),
     Interaction(agents[0], agents[1], -0.7, 1, datetime.datetime.now()),
     Interaction(agents[0], agents[1], -0.7, 0.5, datetime.datetime.now()),
-    Interaction(agents[0], agents[1], -0.9, 1, datetime.datetime.now()),
-    Interaction(agents[0], agents[1], -0.9, 1, datetime.datetime.now())
+Interaction(agents[2], agents[1], 0.9, 1, datetime.datetime.now()),
+Interaction(agents[2], agents[1], 0.9, 1, datetime.datetime.now()),
+    Interaction(agents[0], agents[2], -0.9, 1, datetime.datetime.now()),
+    Interaction(agents[0], agents[2], -0.9, 1, datetime.datetime.now())
 ]
-draw_graph(agents, trusts)
+draw_graph(agents)
+print("ET for 1 and 2", EmergentTrust.calculate_for_i_j(agents[0], agents[1], agents))
+print("ET for 3 and 1", EmergentTrust.calculate_for_i_j(agents[2], agents[1], agents))
+print("AET for sys", EmergentTrust.calculate_average(agents))
+
 
 # def emergent_trust(G):
 #     total_interaction_trust = 0
