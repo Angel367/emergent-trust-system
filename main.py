@@ -6,14 +6,13 @@ class Agent:
     def __init__(self, agent_id, name="baseName", reputation=0.50):
         self.ID = agent_id
         self.name = name
-        self.reputation = reputation  # interval
-        self.trustScores = []  # БЫЛО random.randint(0, 100)   TODO это массив по идее
-        # однако я думаю что это отдельная сущность характеризующ отношения между агентами
-        # and what interval
+        self.reputation = reputation  # от 0 до 1
+        self.trustScores = []  # from 0 to 1 for every score
         self.interactions = []
 
     def __str__(self):
         return self.ID.__str__() + "." + self.name
+
     def get_ID(self):
         return self.ID
 
@@ -39,8 +38,7 @@ class Agent:
         for item in self.trustScores:
             if item.get_agent2().ID == agent_id or item.get_agent1().ID == agent_id:
                 return item.get_score()
-            else:
-                return None
+        return None
 
     def add_trust_score(self, score):
         self.trustScores.append(score)
@@ -112,7 +110,7 @@ class Trust:
 
 class EmergentTrust:
     @staticmethod
-    def calculate_trust(agent_i, agent_j, agents):
+    def calculate_for_i_j(agent_i, agent_j, agents):
         trust_score = agent_i.get_trust_score_by_id(agent_id=agent_j.ID)
         interaction_count = agent_i.get_interactions_by_id(agent_id=agent_j.ID).count()
         sum = 0
@@ -127,6 +125,8 @@ class EmergentTrust:
         # Perform trust calculation based on available data and return the result
         # (Implementation left to your specific requirements)
         pass
+    # TODO sum of all em_tr_for_i_j and div by their count
+    # def calculate_average(self,):
 
 #
 # from dostoevsky.tokenization import RegexTokenizer
