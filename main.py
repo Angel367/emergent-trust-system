@@ -257,7 +257,7 @@ def read_trusts_from_csv(agents, filename="trusts.csv"):
                                       int(row['agent2_id']))
             score = float(row['score'])
             print(agent1, agent2)
-            if agent1 and agent2:
+            if not agent1 == agent2 and not agent1.get_trust_score_by_id(agent2.ID):
                 trust = Trust(agent1, agent2, score)
                 trusts.append(trust)
 
