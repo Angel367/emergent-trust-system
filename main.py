@@ -202,13 +202,13 @@ def generate_agents_from_kt(n=10):
 
     ]
     fieldnames = ["ID", "name", "reputation"]
-    with open('agents.csv', 'w', newline='') as csvfile:
+    with open('input/agents.csv', 'w', newline='') as csvfile:
         csv_writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         csv_writer.writeheader()
         csv_writer.writerows(agents_data)
 
 
-def read_agents_from_csv(filename="agents.csv"):
+def read_agents_from_csv(filename="input/agents.csv"):
     agents = []
     with open(filename, newline='') as csvfile:
         csv_reader = csv.DictReader(csvfile)
@@ -235,7 +235,7 @@ def generate_trusts_from_kt(n):
     trust_data = [trust for trust in trust_data if not trust["agent1_id"] == trust["agent2_id"]]
 
     fieldnames = ["agent1_id", "agent2_id", "score"]
-    with open('trusts.csv', 'w', newline='') as csvfile:
+    with open('input/trusts.csv', 'w', newline='') as csvfile:
         csv_writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         csv_writer.writeheader()
         csv_writer.writerows(trust_data)
@@ -247,7 +247,7 @@ def find_agent_by_id(agents, id):
             return agent
 
 
-def read_trusts_from_csv(agents, filename="trusts.csv"):
+def read_trusts_from_csv(agents, filename="input/trusts.csv"):
     trusts = []
     with open(filename, newline='') as csvfile:
         csv_reader = csv.DictReader(csvfile)
@@ -270,7 +270,7 @@ def read_trusts_from_csv(agents, filename="trusts.csv"):
 
 def read_interactions_from_csv(agents, start=0, finish=10, filename="kt.csv"):
     interactions = []
-    with open('kt.csv', newline='', encoding='utf8') as csvfile:
+    with open('input/kt.csv', newline='', encoding='utf8') as csvfile:
         csv_reader = csv.DictReader(csvfile)
         count, index = finish - start + 1, 0
         for row in csv_reader:

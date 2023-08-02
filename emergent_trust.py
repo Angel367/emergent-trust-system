@@ -26,12 +26,12 @@ def draw_heatmap(agents, name_of_file):
     hm = sns.heatmap(data=data,
                      annot=True,
                      cmap=colors.ListedColormap(
-                       ["red", "yellow", "green"]
+                       ["red", "orange", "yellow", "green"]
                      )
                      )
 
     # displaying the plotted heatmap
-    plt.savefig("heapmap" + name_of_file)
+    plt.savefig("output/heapmap" + name_of_file)
     # Display the plot
     plt.show()
 
@@ -67,7 +67,7 @@ def draw_graph(agents, name_of_file):
                        ["red", "yellow", "green"]
                      ), edge_color=edge_colors, width=edge_widths,
             arrows=True, connectionstyle='arc3, rad = 0.1')
-    plt.savefig("graph" + name_of_file)
+    plt.savefig("output/graph" + name_of_file)
     plt.show()
 
 
@@ -83,7 +83,7 @@ read_interactions_from_csv(agents, 0, 3000)
 draw_graph(agents, "2.png")
 draw_heatmap(agents, "2.png")
 
-read_interactions_from_csv(agents, 1, 2999)
+read_interactions_from_csv(agents, 1000, 2000)
 draw_graph(agents, "3.png")
 draw_heatmap(agents, "3.png")
 
