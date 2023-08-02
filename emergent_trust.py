@@ -1,25 +1,11 @@
 import datetime
-
 import networkx as nx
 import matplotlib.pyplot as plt
-import random
-
-from main import Agent, Trust, Interaction, EmergentTrust
-
-
-# Функция для обновления доверия на основе взаимодействий агентов
-# def update_trust(G, iterations):
-#     for interaction in iterations:
-#         u = interaction.get_agent1()
-#         v = interaction.get_agent2()
-#
-#         interaction_result = interaction.get_sentiment() * \
-#             interaction.get_interaction_type() * u.reputation * v.reputation
-#         trust_change = 0.1 if interaction_result else -0.1
-#         G[u][v]['trust'] = min(max(G[u][v]['trust'] + trust_change, 0), 1)
+from main import Interaction, EmergentTrust, read_agents_from_csv, \
+    generate_agents_from_kt, generate_trusts_from_kt, read_trusts_from_csv, read_interactions_from_csv
 
 
-def draw_graph(agents):
+def draw_graph(agents, name_of_file):
     # Создаем граф с 10 узлами и соединяем каждый узел с двумя соседями
     G = nx.MultiDiGraph()
     G.add_nodes_from(agents)
@@ -27,9 +13,9 @@ def draw_graph(agents):
     for v in agents:
         for one in v.get_trust_scores():
             trusts.append(one)
-    print(trusts)
+    # print(trusts)
     for trust in trusts:
-        print(trust)
+        # print(trust)
         G.add_edge(trust.get_agent1(),
                    trust.get_agent2(), trust=trust.get_score())
     edge_widths = []
@@ -41,76 +27,58 @@ def draw_graph(agents):
     pos = nx.circular_layout(G)
     edge_widths = [u.get_interactions_by_id_count(v.ID) + 1 for u, v in G.edges()]
     edge_colors = [(1 - G[u][v][0]['trust'], G[u][v][0]['trust'], 0) for u, v in G.edges()]
-    print(edge_widths)
-    node_colors = [((1-v.get_reputation()), v.get_reputation(), 0) for v in G.nodes()]
+    # print(edge_widths)
+    node_colors = [((1 - v.get_reputation()), v.get_reputation(), 0) for v in G.nodes()]
     # print(node_colors)
     nx.draw(G, pos, node_size=500, node_color=node_colors, with_labels=True,
-           edge_cmap=plt.cm.Reds, edge_color=edge_colors, width=edge_widths,
+            edge_cmap=plt.cm.Reds, edge_color=edge_colors, width=edge_widths,
             arrows=True, connectionstyle='arc3, rad = 0.1')
+    plt.savefig(name_of_file)
     plt.show()
 
+generate_agents_from_kt()
+agents = read_agents_from_csv()
+generate_trusts_from_kt(agents.__len__())
+trusts = read_trusts_from_csv(agents)
+draw_graph(agents, "1.png")
+read_interactions_from_csv(agents, 0, 0)
+draw_graph(agents, "2.png")
+# read_interactions_from_csv(agents, 10, 20)
+draw_graph(agents, "3.png")
 
-agents = [Agent(1),
-          Agent(2, "123", 0.95),
-          Agent(3, "qwe", 0.1)
-          ]
-trusts = [
-    Trust(agents[1], agents[0], 0.5),
-    Trust(agents[0], agents[2], 0.9),
-    Trust(agents[2], agents[1], 0.1),
-    Trust(agents[0], agents[1], 0.7)
-          ]
-interactions = [
-    Interaction(agents[1], agents[2], 0.9, 1, datetime.datetime.now()),
-    Interaction(agents[0], agents[1], -0.9, 1, datetime.datetime.now()),
-    Interaction(agents[1], agents[0], -0.8, 0.6, datetime.datetime.now()),
-    Interaction(agents[2], agents[1], 0.7, 1, datetime.datetime.now()),
-    Interaction(agents[0], agents[2], 0.7, 0.5, datetime.datetime.now()),
-Interaction(agents[1], agents[2], 0.9, 1, datetime.datetime.now()),
-    Interaction(agents[2], agents[0], -0.9, 1, datetime.datetime.now()),
-    Interaction(agents[2], agents[0], -0.8, 0.6, datetime.datetime.now()),
-    Interaction(agents[0], agents[1], -0.7, 1, datetime.datetime.now()),
-    Interaction(agents[0], agents[1], -0.7, 0.5, datetime.datetime.now()),
-Interaction(agents[2], agents[1], 0.9, 1, datetime.datetime.now()),
-Interaction(agents[2], agents[1], 0.9, 1, datetime.datetime.now()),
-    Interaction(agents[0], agents[2], -0.9, 1, datetime.datetime.now()),
-    Interaction(agents[0], agents[2], -0.9, 1, datetime.datetime.now())
-]
-draw_graph(agents)
+
+# agents = [Agent(1),
+#           Agent(2, "123", 0.95),
+#           Agent(3, "qwe", 0.1)
+#           ]
+
+# trusts = [
+#     Trust(agents[1], agents[0], 0.5),
+#     Trust(agents[0], agents[2], 0.9),
+#     Trust(agents[2], agents[1], 0.1),
+#     Trust(agents[0], agents[1], 0.7)
+# ]
+
+#
+# Interaction(agents[1], agents[2], 0.9, 1, datetime.datetime.now())
+# Interaction(agents[0], agents[1], -0.9, 1, datetime.datetime.now())
+# Interaction(agents[1], agents[0], -0.8, 0.6, datetime.datetime.now())
+# Interaction(agents[2], agents[1], 0.7, 1, datetime.datetime.now())
+# Interaction(agents[0], agents[2], 0.7, 0.5, datetime.datetime.now())
+#
+# interactions = [
+#     Interaction(agents[1], agents[2], 0.9, 1, datetime.datetime.now()),
+#     Interaction(agents[2], agents[0], -0.9, 1, datetime.datetime.now()),
+#     Interaction(agents[2], agents[0], -0.8, 0.6, datetime.datetime.now()),
+#     Interaction(agents[0], agents[1], -0.7, 1, datetime.datetime.now()),
+#     Interaction(agents[0], agents[1], -0.7, 0.5, datetime.datetime.now()),
+#     Interaction(agents[2], agents[1], 0.9, 1, datetime.datetime.now()),
+#     Interaction(agents[2], agents[1], 0.9, 1, datetime.datetime.now()),
+#     Interaction(agents[0], agents[2], -0.9, 1, datetime.datetime.now()),
+#     Interaction(agents[0], agents[2], -0.9, 1, datetime.datetime.now())
+# ]
+
+
 print("ET for 1 and 2", EmergentTrust.calculate_for_i_j(agents[0], agents[1], agents))
 print("ET for 3 and 1", EmergentTrust.calculate_for_i_j(agents[2], agents[1], agents))
 print("AET for sys", EmergentTrust.calculate_average(agents))
-
-
-# def emergent_trust(G):
-#     total_interaction_trust = 0
-#     for u, v in G.edges():
-#         total_interaction_trust += G[u][v]['interaction_count'] * G[u][v]['trust']
-#
-#     emergent_trust = dict()
-#     for u, v in G.edges():
-#         emergent_trust[(u, v)] = (G[u][v]['interaction_count'] * G[u][v]['trust']) / total_interaction_trust
-#
-#     return emergent_trust
-
-# # Создаем граф и инициализируем ребра с атрибутами 'interaction_count' и 'trust'
-# # G = nx.Graph()
-# # G.add_edges_from([(0, 1), (1, 2), (2, 3), (3, 4)])
-# for u, v in G.edges():
-#     G[u][v]['interaction_count'] = random.randint(1, 10)
-#     # G[u][v]['trust'] = random.random()
-#
-# # Вычисляем эмерджентное доверие
-# emergent_trust_values = emergent_trust(G)
-# print("Вычисляем эмерджентное доверие:")
-# print(emergent_trust_values)
-# def average_emergent_trust(G):
-#     emergent_trust_values = emergent_trust(G)
-#     total_emergent_trust = sum(emergent_trust_values.values())
-#     num_edges = len(G.edges())
-#
-#     return total_emergent_trust / num_edges
-#
-# # Вычисляем среднее эмерджентное доверие
-# average_ED = average_emergent_trust(G)
-# print("Среднее эмерджентное доверие:", average_ED)
