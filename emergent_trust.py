@@ -1,7 +1,10 @@
+from math import sqrt
+
 import networkx as nx
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib import colors
+from matplotlib.colors import LinearSegmentedColormap
 
 from main import (EmergentTrust, read_agents_from_csv, generate_agents_from_kt,
                   generate_trusts_from_kt, read_trusts_from_csv, read_interactions_from_csv)
@@ -25,9 +28,12 @@ def draw_heatmap(agents, name_of_file):
     # print(data)
     hm = sns.heatmap(data=data,
                      annot=True,
-                     cmap=colors.ListedColormap(
-                       ["red", "orange", "yellow", "green"]
-                     )
+                     # cmap=colors.ListedColormap(
+                     #   # [ "orange", "yellow", "green"]
+                     #     [ 'darkgreen',"green",'limegreen' ,
+                     #      'yellow', 'orange','darkorange' , "red",]
+                     # )
+                     cmap=LinearSegmentedColormap.from_list('red_green', ['r', 'y', 'g'], 256)
                      )
 
     # displaying the plotted heatmap
@@ -58,14 +64,12 @@ def draw_graph(agents, name_of_file):
         max_int = 10
     # Визуализируем граф с помощью цвета и толщины ребер, основанных на доверии
     pos = nx.circular_layout(G)
-    edge_widths = [8 * (u.get_interactions_by_id_count(v.ID) + 1) / max_int
+    edge_widths = [5 * (u.get_interactions_by_id_count(v.ID) + 1) / max_int
                    for u, v in G.edges()]
-    edge_colors = [(1 - G[u][v][0]['trust'], G[u][v][0]['trust'], 0) for u, v in G.edges()]
-    node_colors = [((1 - v.get_reputation()), v.get_reputation(), 0) for v in G.nodes()]
+    edge_colors = [(sqrt(1 - G[u][v][0]['trust']), sqrt(G[u][v][0]['trust']), 0) for u, v in G.edges()]
+    node_colors = [(sqrt(1 - v.get_reputation()), sqrt(v.get_reputation()), 0) for v in G.nodes()]
     nx.draw(G, pos, node_size=500, node_color=node_colors, with_labels=True,
-            edge_cmap=colors.ListedColormap(
-                       ["red", "yellow", "green"]
-                     ), edge_color=edge_colors, width=edge_widths,
+             edge_color=edge_colors, width=edge_widths,
             arrows=True, connectionstyle='arc3, rad = 0.1')
     plt.savefig("output/graph" + name_of_file)
     plt.show()
@@ -79,11 +83,11 @@ trusts = read_trusts_from_csv(agents)
 draw_heatmap(agents, "1.png")
 draw_graph(agents, "1.png")
 
-read_interactions_from_csv(agents, 0, 3000)
+read_interactions_from_csv(agents, 0, 3)
 draw_graph(agents, "2.png")
 draw_heatmap(agents, "2.png")
 
-read_interactions_from_csv(agents, 1000, 2000)
+read_interactions_from_csv(agents, 1, 2)
 draw_graph(agents, "3.png")
 draw_heatmap(agents, "3.png")
 
