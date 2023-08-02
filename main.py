@@ -284,8 +284,8 @@ def read_interactions_from_csv(agents, start=0, finish=10, filename="kt.csv"):
             interactions.append(interaction)
 
     for interaction in interactions:
-        print(f"agent1: {interaction.get_agent1}, agent2: {interaction.get_agent2},"
-              f" sentiment: {interaction.get_sentiment},"
+        print(f"agent1: {interaction.get_agent1()}, agent2: {interaction.get_agent2()},"
+              f" sentiment: {interaction.get_sentiment()},"
               f" interactionType: {interaction.get_interaction_type()}")
     return interaction
 
