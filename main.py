@@ -91,7 +91,7 @@ class Interaction:
 
     def delta_trust(self):
         #  TODO осмыслить формулу для расчета доверия trust_change
-        trust_change = 0.01 * self.get_sentiment() * \
+        trust_change = 0.1 * self.get_sentiment() * \
                        self.get_interaction_type() * self._agent1.reputation
         trust = self._agent1.get_trust_score_by_id(agent_id=self._agent2.ID)
         # print(trust_change, trust.get_score(), self._agent1, self._agent2)
@@ -172,17 +172,18 @@ tokens = tokenizer.split('всё очень плохо')  # [('всё', None), (
 model = FastTextSocialNetworkModel(tokenizer=tokenizer)
 
 
-# messages = [
-#     'Сегодня хорошая погода',
+# messages1 = [
+    # 'Сегодня хорошая погода',
 #     'Я счастлив проводить с тобою время',
 #     'Мне нравится эта музыкальная композиция',
 #     'В больнице была ужасная очередь',
 #     'Сосед с верхнего этажа мешает спать',
 #     'Маленькая девочка потерялась в торговом центре',
 # ]
-
+# messages = ['Я счастлив проводить с тобою время']
+#
 # results = model.predict(messages, k=6)
-
+#
 # for message, sentiment in zip(messages, results):
 #     # привет -> {'speech': 1.0000100135803223, 'skip': 0.0020607432816177607}
 #     # люблю тебя!! -> {'positive': 0.9886782765388489, 'skip': 0.005394937004894018}
@@ -273,37 +274,27 @@ def read_interactions_from_csv(agents, start=0, finish=10, filename="kt.csv"):
         csv_reader = csv.DictReader(csvfile)
         count, index = finish - start + 1, 0
         for row in csv_reader:
+            # print(index)
             if start > index:
+                index += 1
                 continue
-            if count <= index:
+            if count + start <= index:
                 break
             index += 1
             agent1 = find_agent_by_id(agents, random.randint(1, agents.__len__()))
             agent2 = agent1
             while agent1 == agent2:
                 agent2 = find_agent_by_id(agents, random.randint(1, agents.__len__()))
-            review = row["review"]
-            result = model.predict("Добрый мальчик", k=1)
-            # print(result)
-            interaptionType, sentiment = random.random(), 2 * random.random() - 1 #TODO
-
-            interaction = Interaction(agent1, agent2, sentiment, interaptionType )
+            review = [row["review"]]
+            result = model.predict(review, k=6)
+            interaptionType = float(result[0]['neutral'])
+            sentiment = float(result[0]['positive']) - float(result[0]['negative'])
+            interaction = Interaction(agent1, agent2, sentiment, interaptionType)
             interactions.append(interaction)
-
+    print(interactions.__len__())
     # for interaction in interactions:
     #     print(f"agent1: {interaction.get_agent1()}, agent2: {interaction.get_agent2()},"
     #           f" sentiment: {interaction.get_sentiment()},"
     #           f" interactionType: {interaction.get_interaction_type()}")
     return interactions
 
-
-# with open('kt.csv', newline='', encoding='utf8') as csvfile:
-#
-#     csv_reader = csv.reader(csvfile)
-#
-#     for row in csv_reader:
-#         # 0 - id отзыва
-#         # 1 - содержимое (rus)
-#         # 3 - оценка (good, bad, neutral)
-#         #print(row[3])
-#         pass
