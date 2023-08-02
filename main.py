@@ -2,6 +2,7 @@ import datetime
 import math
 import random
 import csv
+import string
 
 
 class Agent:
@@ -120,7 +121,7 @@ class Trust:
         return self._agent2
 
     def get_score(self):
-        return self._score
+        return round(self._score, 2)
 
     def set_score(self, score):
         self._score = score
@@ -189,13 +190,14 @@ model = FastTextSocialNetworkModel(tokenizer=tokenizer)
 #     print(message, '->', sentiment)
 
 
-def generate_agents_from_kt():
+def generate_agents_from_kt(n=10):
     # generate agents (A...Z)
     # import csv
     agents_data = [
-        {"ID": 1, "name": "A", "reputation": 0.05},
-        {"ID": 2, "name": "B", "reputation": 0.50},
-        {"ID": 3, "name": "C", "reputation": 0.95},
+        {"ID": i,
+         "name": random.choice(string.ascii_letters),
+         "reputation": random.random()}
+        for i in range(1, n+1)
 
     ]
     fieldnames = ["ID", "name", "reputation"]
@@ -216,8 +218,8 @@ def read_agents_from_csv(filename="agents.csv"):
             agent = Agent(agent_id=ID, name=name, reputation=reputation)
             agents.append(agent)
 
-    for agent in agents:
-        print(f"ID: {agent.ID}, Name: {agent.name}, Reputation: {agent.reputation}")
+    # for agent in agents:
+    #     print(f"ID: {agent.ID}, Name: {agent.name}, Reputation: {agent.reputation}")
 
     return agents
 
@@ -227,12 +229,10 @@ def generate_trusts_from_kt(n):
         {"agent1_id": random.randint(1, n),
          "agent2_id": random.randint(1, n),
          "score": random.random()}
-        for _ in range(math.factorial(n) * 2)
+        for _ in range(n*5)
     ]
-    for trust in trust_data:
-        print(f"trust[agent1_id]:{trust['agent1_id']}, trust[agent2_id]:{trust['agent2_id']}")
-        if trust["agent1_id"] == trust["agent2_id"]:
-            trust_data.remove(trust)
+    trust_data = [trust for trust in trust_data if not trust["agent1_id"] == trust["agent2_id"]]
+
     fieldnames = ["agent1_id", "agent2_id", "score"]
     with open('trusts.csv', 'w', newline='') as csvfile:
         csv_writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -256,13 +256,13 @@ def read_trusts_from_csv(agents, filename="trusts.csv"):
             agent2 = find_agent_by_id(agents,
                                       int(row['agent2_id']))
             score = float(row['score'])
-            print(agent1, agent2)
+            # print(agent1, agent2)
             if not agent1 == agent2 and not agent1.get_trust_score_by_id(agent2.ID):
                 trust = Trust(agent1, agent2, score)
                 trusts.append(trust)
 
-    for trust in trusts:
-        print(f"agent1: {trust.get_agent1()}, agent2: {trust.get_agent2()}, trust_score: {trust.get_score()}")
+    # for trust in trusts:
+    #     print(f"agent1: {trust.get_agent1()}, agent2: {trust.get_agent2()}, trust_score: {trust.get_score()}")
 
     return trusts
 
@@ -279,8 +279,9 @@ def read_interactions_from_csv(agents, start=0, finish=10, filename="kt.csv"):
                 break
             index += 1
             agent1 = find_agent_by_id(agents, random.randint(1, agents.__len__()))
-            agent2 = find_agent_by_id(agents, random.randint(1, agents.__len__()))
-
+            agent2 = agent1
+            while agent1 == agent2:
+                agent2 = find_agent_by_id(agents, random.randint(1, agents.__len__()))
             review = row["review"]
             result = model.predict("Добрый мальчик", k=1)
             # print(result)
@@ -289,11 +290,11 @@ def read_interactions_from_csv(agents, start=0, finish=10, filename="kt.csv"):
             interaction = Interaction(agent1, agent2, sentiment, interaptionType )
             interactions.append(interaction)
 
-    for interaction in interactions:
-        print(f"agent1: {interaction.get_agent1()}, agent2: {interaction.get_agent2()},"
-              f" sentiment: {interaction.get_sentiment()},"
-              f" interactionType: {interaction.get_interaction_type()}")
-    return interaction
+    # for interaction in interactions:
+    #     print(f"agent1: {interaction.get_agent1()}, agent2: {interaction.get_agent2()},"
+    #           f" sentiment: {interaction.get_sentiment()},"
+    #           f" interactionType: {interaction.get_interaction_type()}")
+    return interactions
 
 
 # with open('kt.csv', newline='', encoding='utf8') as csvfile:
