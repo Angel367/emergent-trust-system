@@ -229,6 +229,10 @@ def generate_trusts_from_kt(n):
          "score": random.random()}
         for _ in range(math.factorial(n) * 2)
     ]
+    for trust in trust_data:
+        print(f"trust[agent1_id]:{trust['agent1_id']}, trust[agent2_id]:{trust['agent2_id']}")
+        if trust["agent1_id"] == trust["agent2_id"]:
+            trust_data.remove(trust)
     fieldnames = ["agent1_id", "agent2_id", "score"]
     with open('trusts.csv', 'w', newline='') as csvfile:
         csv_writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -252,11 +256,13 @@ def read_trusts_from_csv(agents, filename="trusts.csv"):
             agent2 = find_agent_by_id(agents,
                                       int(row['agent2_id']))
             score = float(row['score'])
-            trust = Trust(agent1, agent2, score)
-            trusts.append(trust)
+            print(agent1, agent2)
+            if agent1 and agent2:
+                trust = Trust(agent1, agent2, score)
+                trusts.append(trust)
 
     for trust in trusts:
-        print(f"agent1: {trust.get_agent1}, agent2: {trust.get_agent2}, trust_score: {trust.get_score}")
+        print(f"agent1: {trust.get_agent1()}, agent2: {trust.get_agent2()}, trust_score: {trust.get_score()}")
 
     return trusts
 
