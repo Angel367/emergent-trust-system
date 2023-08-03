@@ -1,10 +1,9 @@
 import datetime
-import math
 import random
 import csv
 import string
 
-
+# Define an Agent class to represent individual agents in the reputation system
 class Agent:
     def __init__(self, agent_id, name="baseName", reputation=0.50):
         self.ID = agent_id
@@ -13,9 +12,11 @@ class Agent:
         self.trustScores = []  # from 0 to 1 for every score
         self.interactions = []
 
+    # Custom string representation of the Agent object
     def __str__(self):
         return self.ID.__str__() + "." + self.name
 
+    # Getters and setters for the Agent attributes
     def get_ID(self):
         return self.ID
 
@@ -37,18 +38,21 @@ class Agent:
     def get_trust_scores(self):
         return self.trustScores
 
+    # Get the trust score of this agent for a specific other agent (by agent_id)
     def get_trust_score_by_id(self, agent_id):
         for item in self.trustScores:
             if item.get_agent2().ID == agent_id:  # or item.get_agent1().ID == agent_id:
                 return item
         return None
 
+    # Add a new trust score to this agent's list of trust scores
     def add_trust_score(self, score):
         self.trustScores.append(score)
 
     def get_interactions(self):
         return self.interactions
 
+    # Get the count of interactions with a specific other agent (by agent_id)
     def get_interactions_by_id_count(self, agent_id):
         items = []
         for item in self.interactions:
@@ -56,16 +60,18 @@ class Agent:
                 items.append(item)
         return items.__len__()
 
+    # Add a new interaction to this agent's list of interactions
     def add_interaction(self, interaction):
         self.interactions.append(interaction)
 
 
+# Define an Interaction class to represent interactions between two agents
 class Interaction:
     def __init__(self, agent1, agent2, polarity, subjectivity, timestamp=datetime.datetime.now()):
         if not agent1 == agent2:
             self._agent1 = agent1
             self._agent2 = agent2
-            self._sentiment = polarity  # from -1 to 1 -negative +positive
+            self._sentiment = polarity  # from -1 to 1 - negative to positive
             self._interactionType = subjectivity  # from 0 to 1 = neutrality
             self._timestamp = timestamp
             agent1.add_interaction(self)
@@ -89,16 +95,17 @@ class Interaction:
     def get_timestamp(self):
         return self._timestamp
 
+    # Calculate the change in trust score for the agent after an interaction
     def delta_trust(self):
-        #  TODO осмыслить формулу для расчета доверия trust_change
-        trust_change = 0.1 * self.get_sentiment() * \
-                       self.get_interaction_type() * self._agent1.reputation
+        # TODO: Define the formula for calculating trust_change
+        trust_change = 0.1 * self.get_sentiment() * self.get_interaction_type() * self._agent1.reputation
         trust = self._agent1.get_trust_score_by_id(agent_id=self._agent2.ID)
         # print(trust_change, trust.get_score(), self._agent1, self._agent2)
         if 0 < trust.get_score() + trust_change < 1:
             trust.set_score(trust.get_score() + trust_change)
 
 
+# Define a Trust class to represent the trust score between two agents
 class Trust:
     def __init__(self, agent1, agent2, score=0.5):
         if not agent1.get_trust_score_by_id(agent_id=agent2.ID) and not agent1 == agent2:
@@ -110,9 +117,6 @@ class Trust:
     def __str__(self):
         return self._agent1.__str__() + "~" + self._agent2.__str__() + ":" \
             + self._score.__str__()
-
-    # def __len__(self):
-    #     return int(self._score * 10)
 
     def get_agent1(self):
         return self._agent1
@@ -127,14 +131,16 @@ class Trust:
         self._score = score
 
 
+# Define a static class EmergentTrust to calculate the emergent trust score between two agents
 class EmergentTrust:
+    # Calculate the emergent trust score for agent_i and agent_j based on their interactions with all agents
     @staticmethod
     def calculate_for_i_j(agent_i, agent_j, agents):
         trust_score = agent_i.get_trust_score_by_id(agent_id=agent_j.ID)
         if trust_score:
             trust_score = trust_score.get_score()
         else:
-            trust_score=0
+            trust_score = 0
         interaction_count = agent_i.get_interactions_by_id_count(agent_id=agent_j.ID)
         sum = 0
         for x in agents:
@@ -146,12 +152,9 @@ class EmergentTrust:
                               x.get_trust_score_by_id(agent_id=y.ID).get_score()
         # print(sum, "sum")
         return trust_score * interaction_count / sum
-        # TODO протестировать правильность работы ЕД для I,J
-        # (InteractionCount(i, j) * TrustScore(i, j)) / Sum(InteractionCount(x, y) * TrustScore(x, y))
-        # Perform trust calculation based on available data and return the result
-        # (Implementation left to your specific requirements)
-        pass
-    #  sum of all em_tr_for_i_j and div by their count
+        # TODO: Test the correctness of EmergentTrust calculation for I, J
+
+    # Calculate the average emergent trust score for all agents in the system
     @staticmethod
     def calculate_average(agents):
         sum, count = 0, 0
@@ -161,36 +164,20 @@ class EmergentTrust:
                     sum += EmergentTrust.calculate_for_i_j(a1, a2, agents)
                     count += 1
         return sum / count
-    # TODO протестить для авереж эмерж труст
+        # TODO: Test for average emergent trust
 
+
+# Import libraries for sentiment analysis using dostoevsky
 from dostoevsky.tokenization import RegexTokenizer
 from dostoevsky.models import FastTextSocialNetworkModel
 
+# Initialize tokenizer and model for sentiment analysis
 tokenizer = RegexTokenizer()
 tokens = tokenizer.split('всё очень плохо')  # [('всё', None), ('очень', None), ('плохо', None)]
-
 model = FastTextSocialNetworkModel(tokenizer=tokenizer)
 
 
-# messages1 = [
-    # 'Сегодня хорошая погода',
-#     'Я счастлив проводить с тобою время',
-#     'Мне нравится эта музыкальная композиция',
-#     'В больнице была ужасная очередь',
-#     'Сосед с верхнего этажа мешает спать',
-#     'Маленькая девочка потерялась в торговом центре',
-# ]
-# messages = ['Я счастлив проводить с тобою время']
-#
-# results = model.predict(messages, k=6)
-#
-# for message, sentiment in zip(messages, results):
-#     # привет -> {'speech': 1.0000100135803223, 'skip': 0.0020607432816177607}
-#     # люблю тебя!! -> {'positive': 0.9886782765388489, 'skip': 0.005394937004894018}
-#     # малолетние дебилы -> {'negative': 0.9525841474533081, 'neutral': 0.13661839067935944}]
-#     print(message, '->', sentiment)
-
-
+# Function to generate agents data from CSV file
 def generate_agents_from_kt(n=10):
     # generate agents (A...Z)
     # import csv
@@ -198,8 +185,7 @@ def generate_agents_from_kt(n=10):
         {"ID": i,
          "name": random.choice(string.ascii_letters),
          "reputation": random.random()}
-        for i in range(1, n+1)
-
+        for i in range(1, n + 1)
     ]
     fieldnames = ["ID", "name", "reputation"]
     with open('input/agents.csv', 'w', newline='') as csvfile:
@@ -208,6 +194,7 @@ def generate_agents_from_kt(n=10):
         csv_writer.writerows(agents_data)
 
 
+# Function to read agents data from CSV file and create Agent objects
 def read_agents_from_csv(filename="input/agents.csv"):
     agents = []
     with open(filename, newline='') as csvfile:
@@ -225,12 +212,13 @@ def read_agents_from_csv(filename="input/agents.csv"):
     return agents
 
 
+# Function to generate trust scores data from CSV file
 def generate_trusts_from_kt(n):
     trust_data = [
         {"agent1_id": random.randint(1, n),
          "agent2_id": random.randint(1, n),
          "score": random.random()}
-        for _ in range(n*5)
+        for _ in range(n * 5)
     ]
     trust_data = [trust for trust in trust_data if not trust["agent1_id"] == trust["agent2_id"]]
 
@@ -241,21 +229,21 @@ def generate_trusts_from_kt(n):
         csv_writer.writerows(trust_data)
 
 
+# Function to find an agent by ID in the list of agents
 def find_agent_by_id(agents, id):
     for agent in agents:
         if id == agent.get_ID():
             return agent
 
 
+# Function to read trust scores data from CSV file and create Trust objects
 def read_trusts_from_csv(agents, filename="input/trusts.csv"):
     trusts = []
     with open(filename, newline='') as csvfile:
         csv_reader = csv.DictReader(csvfile)
         for row in csv_reader:
-            agent1 = find_agent_by_id(agents,
-                                      int(row['agent1_id']))
-            agent2 = find_agent_by_id(agents,
-                                      int(row['agent2_id']))
+            agent1 = find_agent_by_id(agents, int(row['agent1_id']))
+            agent2 = find_agent_by_id(agents, int(row['agent2_id']))
             score = float(row['score'])
             # print(agent1, agent2)
             if not agent1 == agent2 and not agent1.get_trust_score_by_id(agent2.ID):
@@ -268,6 +256,7 @@ def read_trusts_from_csv(agents, filename="input/trusts.csv"):
     return trusts
 
 
+# Function to read interactions data from CSV file and create Interaction objects
 def read_interactions_from_csv(agents, start=0, finish=10, filename="kt.csv"):
     interactions = []
     with open('input/kt.csv', newline='', encoding='utf8') as csvfile:
@@ -297,4 +286,3 @@ def read_interactions_from_csv(agents, start=0, finish=10, filename="kt.csv"):
     #           f" sentiment: {interaction.get_sentiment()},"
     #           f" interactionType: {interaction.get_interaction_type()}")
     return interactions
-
